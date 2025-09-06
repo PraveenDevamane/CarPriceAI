@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarPriceAI - Know your car Price</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #5200a3 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo h1 {
+            color: #8b5cf6;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .logo p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            text-decoration: none;
+        }
+
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .main-container {
+            padding: 60px 40px 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .title {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .title h2 {
+            font-size: 4rem;
+            color: white;
+            font-weight: bold;
+            letter-spacing: 8px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .form-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+            transform: scale(1.02);
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .form-group select option {
+            background: #2d1b69;
+            color: white;
+        }
+
+        .predict-btn {
+            display: block;
+            width: 200px;
+            margin: 30px auto 0;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 10px 30px rgba(238, 90, 82, 0.3);
+        }
+
+        .predict-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(238, 90, 82, 0.4);
+            background: linear-gradient(135deg, #ff5252, #d32f2f);
+        }
+
+        .predict-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .result-container {
+            margin-top: 30px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            display: none;
+        }
+
+        .result-container.show {
+            display: block;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-price {
+            font-size: 2.5rem;
+            color: #4ade80;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .result-text {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 4px solid transparent; /* transparent edges */
+    border-top: 4px solid #8b5cf6;  /* only top arc visible */
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 40px 20px;
+            }
+
+            .title h2 {
+                font-size: 2.5rem;
+                letter-spacing: 4px;
+            }
+
+            .form-container {
+                padding: 25px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            header {
+                padding: 15px 20px;
+            }
+
+            .logo h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <header>
+        <div class="logo">
+            <div>
+                <h1>CarPriceAI</h1>
+                <p>Know your car Price</p>
+            </div>
+        </div>
+        <a href="https://www.linkedin.com/in/praveen-devamane-70a0732b1/" class="profile">
+            <div class="profile-icon">PK</div>
+            <div>
+                <div>Praveen KD</div>
+                <div style="font-size: 0.8rem; opacity: 0.8;">Contact me</div>
+            </div>
+        </a>
+    </header>
+
+    <div class="main-container">
+        <div class="title">
+            <h2>Enter Details</h2>
+        </div>
+
+        <div class="form-container">
+            <form id="carPriceForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="symboling">Symboling (Risk Factor)</label>
+                        <select id="symboling" name="symboling" required>
+                            <option value="">Select risk factor</option>
+                            <option value="-3">-3 (Safest)</option>
+                            <option value="-2">-2</option>
+                            <option value="-1">-1</option>
+                            <option value="0">0 (Average)</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3 (Riskiest)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fueltype">Fuel Type</label>
+                        <select id="fueltype" name="fueltype" required>
+                            <option value="">Select fuel type</option>
+                            <option value="gas">Gas</option>
+                            <option value="diesel">Diesel</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="carbody">Car Body</label>
+                        <select id="carbody" name="carbody" required>
+                            <option value="">Select car body</option>
+                            <option value="sedan">Sedan</option>
+                            <option value="hatchback">Hatchback</option>
+                            <option value="wagon">Wagon</option>
+                            <option value="hardtop">Hardtop</option>
+                            <option value="convertible">Convertible</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="enginelocation">Engine Location</label>
+                        <select id="enginelocation" name="enginelocation" required>
+                            <option value="">Select engine location</option>
+                            <option value="front">Front</option>
+                            <option value="rear">Rear</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="horsepower">Horsepower</label>
+                        <input type="number" id="horsepower" name="horsepower" min="40" max="300" step="5" required placeholder="Enter horsepower (40-300)">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="drivewheel">Drive Wheel</label>
+                        <select id="drivewheel" name="drivewheel" required>
+                            <option value="">Select drive wheel</option>
+                            <option value="fwd">FWD (Front Wheel Drive)</option>
+                            <option value="rwd">RWD (Rear Wheel Drive)</option>
+                            <option value="4wd">4WD (Four Wheel Drive)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="doornumber">Number of Doors</label>
+                        <select id="doornumber" name="doornumber" required>
+                            <option value="">Select doors</option>
+                            <option value="two">Two</option>
+                            <option value="four">Four</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="aspiration">Aspiration</label>
+                        <select id="aspiration" name="aspiration" required>
+                            <option value="">Select aspiration</option>
+                            <option value="std">Standard</option>
+                            <option value="turbo">Turbo</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="enginetype">Engine Type</label>
+                        <select id="enginetype" name="enginetype" required>
+                            <option value="">Select engine type</option>
+                            <option value="ohc">OHC</option>
+                            <option value="ohcf">OHCF</option>
+                            <option value="ohcv">OHCV</option>
+                            <option value="dohc">DOHC</option>
+                            <option value="l">L</option>
+                            <option value="rotor">Rotor</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="enginesize">Engine Size</label>
+                        <input type="number" id="enginesize" name="enginesize" min="50" max="400" step="1" required placeholder="Enter engine size (50-400)">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="compressionratio">Compression Ratio</label>
+                        <input type="number" id="compressionratio" name="compressionratio" min="5.0" max="25.0" step="0.1" required placeholder="Enter compression ratio (5.0-25.0)">
+                    </div>
+                </div>
+
+                <button type="submit" class="predict-btn">Predict</button>
+            </form>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <div class="loading-text">Analyzing your car details...</div>
+            </div>
+
+            <div class="result-container" id="resultContainer">
+                <div class="result-price" id="resultPrice">$25,450</div>
+                <div class="result-text">Estimated Car Price</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('carPriceForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    // Show loading
+    document.getElementById('loading').classList.add('show');
+    document.getElementById('resultContainer').classList.remove('show');
+    
+    // Get form data
+    const formData = new FormData(this);
+    const carData = {
+        symboling: parseInt(formData.get('symboling')),
+        fueltype: formData.get('fueltype'),
+        carbody: formData.get('carbody'),
+        enginelocation: formData.get('enginelocation'),
+        horsepower: parseInt(formData.get('horsepower')),
+        drivewheel: formData.get('drivewheel'),
+        doornumber: formData.get('doornumber'),
+        aspiration: formData.get('aspiration'),
+        enginetype: formData.get('enginetype'),
+        enginesize: parseInt(formData.get('enginesize')),
+        compressionratio: parseFloat(formData.get('compressionratio'))
+    };
+
+    try {
+        const predictedPrice = await callPredictionAPI(carData);
+
+        if (predictedPrice !== null) {
+            // Hide loading
+            document.getElementById('loading').classList.remove('show');
+
+            // Show result
+            document.getElementById('resultPrice').textContent = `$${predictedPrice.toLocaleString()}`;
+            document.getElementById('resultContainer').classList.add('show');
+        }
+    } catch (error) {
+        console.error(error);
+        document.getElementById('loading').classList.remove('show');
+        alert("Something went wrong, please try again.");
+    }
+});
+
+        // Mock prediction function - Replace this with your actual model integration
+        async function callPredictionAPI(data) {
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Prediction failed');
+                }
+                
+                const result = await response.json();
+                return result.predicted_price;
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Prediction failed. Please try again.');
+                return null;
+            }
+        }
+
+        // To integrate your trained model, replace the mockPredict function with:
+        /*
+        async function callPredictionAPI(data) {
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Prediction failed');
+                }
+                
+                const result = await response.json();
+                return result.predicted_price;
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Prediction failed. Please try again.');
+                return null;
+            }
+        }
+        */
+    </script>
+</body>
+</html>
