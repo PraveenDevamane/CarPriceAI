@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify,send_from_directory
 import pickle
 import pandas as pd
 
@@ -10,7 +10,7 @@ feature_columns = pickle.load(open('feature_columns.pkl', 'rb'))
 
 @app.route('/')
 def home():
-    return render_template('index.html')  # loads templates/index.html
+    return send_from_directory('.', 'index.html')
 
 @app.route('/predict', methods=['POST'])
 def predict():
